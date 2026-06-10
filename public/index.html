@@ -262,19 +262,29 @@ function bindLogin(){
     var p=document.getElementById('lp').value;
     var btnEl=document.getElementById('btn-login');
     btnEl.textContent='Ingresando...';btnEl.disabled=true;
+    // Intentar con backend
     try{
-      // Mapear usuario a email para el backend
       var emailMap={'Refrigeracion':'miguelg8203@gmail.com','fabian':'fabian@refrigeracion.co'};
       var email=emailMap[u]||u;
       var data=await apiFetch('/api/auth/login',{method:'POST',body:{email:email,password:p}});
-      if(!data){btnEl.textContent='Ingresar';btnEl.disabled=false;return;}
-      AUTH_TOKEN=data.token;
-      localStorage.setItem('auth_token',data.token);
-      CU={nombre:data.user.nombre,user:u,rol:data.user.rol,id:data.user.id};
-      // Cargar datos iniciales
-      await cargarDatosIniciales();
-      render();
+      if(data&&data.token){
+        AUTH_TOKEN=data.token;
+        localStorage.setItem('auth_token',data.token);
+        CU={nombre:data.user.nombre,user:u,rol:data.user.rol,id:data.user.id};
+        await cargarDatosIniciales();
+        render();
+        return;
+      }
     }catch(e){
+      console.log('Backend no disponible, usando login local');
+    }
+    // Fallback: login local
+    var found=USUARIOS.find(function(x){return x.user===u&&x.pass===p&&x.activo;});
+    if(found){
+      CU=found;
+      btnEl.textContent='Ingresar';btnEl.disabled=false;
+      render();
+    } else {
       var el=document.getElementById('lerr');
       el.style.display='block';el.textContent='Credenciales incorrectas';
       btnEl.textContent='Ingresar';btnEl.disabled=false;
