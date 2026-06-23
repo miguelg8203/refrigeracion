@@ -202,9 +202,9 @@ function toast(msg){
 }
 
 // ── ESTADO APP ───────────────────────────────────────────────
-var CU=null; // current user
-var CV='dashboard'; // current view
-var SB=true; // sidebar open
+var CU=null;
+var CV='dashboard';
+var SB=true;
 var filtros={mes:'2026-06',eq:'',plan:'',estado:''};
 var calMes=5; var calAnio=2026; var calDia=null;
 var repMes='2026-06'; var repEqId='';
@@ -212,6 +212,36 @@ var notifVisto=false; var alertaMostrada=false;
 var verCompletadas=false;
 var selEqId=null;
 var filtroTipo='';
+var LOADING=false;
+var DASH_DATA=null;
+var CRONO_DATA=[];
+var EQUIPOS_API=[];
+var TECNICOS_API=[];
+
+async function cargarDatosIniciales(){
+  try{
+    var eqs=await apiFetch('/api/equipos');
+    if(eqs) EQUIPOS_API=eqs;
+    var tecRes=await apiFetch('/api/usuarios');
+    if(tecRes) TECNICOS_API=tecRes.filter(function(u){return u.rol==='TECNICO';});
+  }catch(e){console.log('Usando datos locales');}
+}
+
+async function cargarDashboard(){
+  try{ DASH_DATA=await apiFetch('/api/dashboard'); }catch(e){console.error(e);}
+}
+
+async function cargarCronograma(){
+  try{
+    var params=new URLSearchParams();
+    if(filtros.mes)params.set('mes',filtros.mes);
+    if(filtros.eq)params.set('equipo_id',filtros.eq);
+    if(filtros.plan)params.set('plan',filtros.plan);
+    if(filtros.estado)params.set('estado',filtros.estado);
+    var data=await apiFetch('/api/programacion?'+params.toString());
+    if(data) CRONO_DATA=data;
+  }catch(e){console.error(e);}
+}
 
 // ── RENDER ───────────────────────────────────────────────────
 function render(){
