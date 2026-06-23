@@ -38,7 +38,7 @@ async function apiFetch(path, opts){
 
 // ── USUARIOS ─────────────────────────────────────────────────
 var USUARIOS=[
-  {id:1,nombre:"Super Admin",user:"Refrigeracion",pass:"123456789",rol:"SUPER_ADMIN",activo:true},
+  {id:1,nombre:"Super Admin",user:"Admin",pass:"admin2026",rol:"SUPER_ADMIN",activo:true},
   {id:2,nombre:"Fabian Tecnico",user:"fabian",pass:"Fabian2025*",rol:"TECNICO",activo:true}
 ];
 
@@ -248,9 +248,9 @@ function rLogin(){
   '<p style="color:#6b7280;font-size:13px">Gestion de Mantenimiento <b style="color:#0369a1">'+(new Date().getFullYear())+'</b></p></div>'+
   '<div id="lerr" style="display:none;background:#fff1f2;border:1px solid #fca5a5;color:#9f1239;padding:10px 14px;border-radius:8px;margin-bottom:14px;font-size:13px"></div>'+
   '<div style="margin-bottom:14px"><label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px">USUARIO</label>'+
-  '<input id="lu" value="Refrigeracion" style="width:100%;padding:10px 14px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;outline:none"/></div>'+
+  '<input id="lu" value="Admin" style="width:100%;padding:10px 14px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;outline:none"/></div>'+
   '<div style="margin-bottom:22px"><label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px">CONTRASEÑA</label>'+
-  '<input id="lp" type="password" value="123456789" style="width:100%;padding:10px 14px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;outline:none"/></div>'+
+  '<input id="lp" type="password" value="admin2026" style="width:100%;padding:10px 14px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;outline:none"/></div>'+
   '<button id="btn-login" style="width:100%;padding:13px;background:#0c1445;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer">Ingresar</button>'+
   '<p style="text-align:center;margin-top:14px;font-size:11px;color:#9ca3af">Desarrollado por <b style="color:#6b7280">Miguel Gutierrez</b></p>'+
   
@@ -264,7 +264,7 @@ function bindLogin(){
     btnEl.textContent='Ingresando...';btnEl.disabled=true;
     // Intentar con backend
     try{
-      var emailMap={'Refrigeracion':'miguelg8203@gmail.com','fabian':'fabian@refrigeracion.co'};
+      var emailMap={'Admin':'Admin','Refrigeracion':'miguelg8203@gmail.com','fabian':'fabian@refrigeracion.co'};
       var email=emailMap[u]||u;
       var data=await apiFetch('/api/auth/login',{method:'POST',body:{email:email,password:p}});
       if(data&&data.token){

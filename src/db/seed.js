@@ -198,12 +198,12 @@ async function seed() {
     console.log('🧹 Tablas limpiadas');
 
     // ── 2. SUPER ADMIN ────────────────────────────────────────────────────────
-    const passwordHash = await bcrypt.hash('123456789', 10);
+    const passwordHash = await bcrypt.hash('admin2026', 10);
     await client.query(`
       INSERT INTO usuarios (nombre, email, password_hash, rol, activo)
       VALUES ($1, $2, $3, $4, $5)
-    `, ['Super Admin', 'miguelg8203@gmail.com', passwordHash, 'SUPER_ADMIN', true]);
-    console.log('👤 Super Admin creado: miguelg8203@gmail.com / Cielo0306*');
+    `, ['Super Admin', 'Admin', passwordHash, 'SUPER_ADMIN', true]);
+    console.log('👤 Super Admin creado: Admin / admin2026');
 
     // Usuario técnico de ejemplo
     const techHash = await bcrypt.hash('Fabian2025*', 10);
