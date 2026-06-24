@@ -1046,12 +1046,15 @@ function bindAll(){
         var na=document.getElementById('ea').value.trim()||t.apellido||'';
         var ne=document.getElementById('ee').value.trim()||t.especialidad||'General';
         try{
-          // API no tiene endpoint de editar usuario aun, actualizar local y en TECNICOS_API
-          t.nombre=nn; if(t.apellido!==undefined)t.apellido=na; t.especialidad=ne;
+          await apiFetch('/api/usuarios/'+t.id,{method:'PATCH',body:{nombre:nn+' '+na}});
+          await cargarDatosIniciales();
+          clE();toast('✅ Tecnico actualizado');render();
+        }catch(e2){
+          t.nombre=nn;
           var apiTec=TECNICOS_API.find(function(x){return x.id===t.id;});
-          if(apiTec){apiTec.nombre=nn;}
-        }catch(e2){}
-        clE();toast('✅ Tecnico actualizado');render();
+          if(apiTec){apiTec.nombre=nn+' '+na;}
+          clE();toast('✅ Tecnico actualizado');render();
+        }
       });
     });
   });
@@ -1662,6 +1665,13 @@ function rCalendario(){
     panelHtml+
     '</div>';
 }
+
+// ── KEEP ALIVE - evita que Railway hiberne ────────────────────
+setInterval(function(){
+  if(AUTH_TOKEN){
+    fetch(API_URL+'/health').catch(function(){});
+  }
+}, 4 * 60 * 1000); // cada 4 minutos
 
 // ── ARRANQUE ─────────────────────────────────────────────────
 async function iniciarSesion(){
