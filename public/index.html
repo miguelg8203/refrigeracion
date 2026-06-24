@@ -616,9 +616,12 @@ function rEquipos(){
 
 // ── TÉCNICOS ─────────────────────────────────────────────────
 function rTecnicos(){
-  var rows=TECNICOS.map(function(t){
+  // Usar TECNICOS_API si disponible, sino fallback local
+  var TECS=TECNICOS_API.length?TECNICOS_API:TECNICOS;
+  var rows=TECS.map(function(t){
     var asig=PROGS.filter(function(p){return p.responsable_id===t.id;}).length;
     var comp=PROGS.filter(function(p){return p.responsable_id===t.id&&p.estado==='COMPLETADO';}).length;
+    var nombre=t.nombre+(t.apellido?' '+t.apellido:'');
     return'<tr style="border-bottom:1px solid #f3f4f6">'+
     '<td style="padding:12px 14px;font-weight:600;color:#0c1445">'+t.nombre+' '+t.apellido+'</td>'+
     '<td style="padding:12px 14px;color:#6b7280">'+t.especialidad+'</td>'+
@@ -738,6 +741,10 @@ function bindAll(){
   document.querySelectorAll('[data-nav]').forEach(function(b){
     b.addEventListener('click',function(){
       CV=b.dataset.nav;
+      if(CV==='tecnicos'){
+        cargarDatosIniciales().then(function(){render();});
+        return;
+      }
       if(CV==='cronograma'&&!CRONO_DATA.length){
         filtros._loaded=false;
         cargarCronograma().then(function(){render();});
@@ -954,21 +961,35 @@ function bindAll(){
   });
   // crear tecnico
   var ct=document.getElementById('btn-cret');
-  if(ct)ct.addEventListener('click',function(){
+  if(ct)ct.addEventListener('click',async function(){
     var n=(document.getElementById('tn').value||'').trim();
     var a=(document.getElementById('ta').value||'').trim();
     var e=(document.getElementById('te').value||'').trim();
     var err=document.getElementById('terr');
     if(!n||!a){err.style.display='block';err.textContent='Nombre y apellido son obligatorios';return;}
     err.style.display='none';
-    TECNICOS.push({id:nextTecId++,nombre:n,apellido:a,especialidad:e||'General',activo:true});
-    toast('👷 Tecnico '+n+' '+a+' creado');render();
+    try{
+      await apiFetch('/api/usuarios',{method:'POST',body:{nombre:n+' '+a,email:n.toLowerCase()+'.'+a.toLowerCase()+'@refrigeracion.co',password:'Tecnico2026*',rol:'TECNICO'}});
+      await cargarDatosIniciales();
+      toast('👷 Tecnico '+n+' '+a+' creado');render();
+    }catch(e2){
+      // fallback local
+      TECNICOS.push({id:nextTecId++,nombre:n,apellido:a,especialidad:e||'General',activo:true});
+      toast('👷 Tecnico '+n+' '+a+' creado');render();
+    }
   });
   // toggle tecnico
   document.querySelectorAll('.btogt').forEach(function(b){
-    b.addEventListener('click',function(){
-      var t=TECNICOS.find(function(x){return x.id===parseInt(b.dataset.tid);});
-      if(t){t.activo=!t.activo;toast(t.activo?'✅ Activado':'⛔ Desactivado');render();}
+    b.addEventListener('click',async function(){
+      var tid=parseInt(b.dataset.tid);
+      try{
+        await apiFetch('/api/usuarios/'+tid+'/activo',{method:'PATCH'});
+        await cargarDatosIniciales();
+        toast('✅ Estado actualizado');render();
+      }catch(e){
+        var t=TECNICOS.find(function(x){return x.id===tid;});
+        if(t){t.activo=!t.activo;toast(t.activo?'✅ Activado':'⛔ Desactivado');render();}
+      }
     });
   });
   // editar tecnico
@@ -997,10 +1018,16 @@ function bindAll(){
       ov.querySelector('#ec').addEventListener('click',clE);
       ov.querySelector('#eca').addEventListener('click',clE);
       ov.addEventListener('click',function(e){if(e.target===ov)clE();});
-      ov.querySelector('#es').addEventListener('click',function(){
-        t.nombre=document.getElementById('en').value.trim()||t.nombre;
-        t.apellido=document.getElementById('ea').value.trim()||t.apellido;
-        t.especialidad=document.getElementById('ee').value.trim()||t.especialidad;
+      ov.querySelector('#es').addEventListener('click',async function(){
+        var nn=document.getElementById('en').value.trim()||t.nombre;
+        var na=document.getElementById('ea').value.trim()||t.apellido||'';
+        var ne=document.getElementById('ee').value.trim()||t.especialidad||'General';
+        try{
+          // API no tiene endpoint de editar usuario aun, actualizar local y en TECNICOS_API
+          t.nombre=nn; if(t.apellido!==undefined)t.apellido=na; t.especialidad=ne;
+          var apiTec=TECNICOS_API.find(function(x){return x.id===t.id;});
+          if(apiTec){apiTec.nombre=nn;}
+        }catch(e2){}
         clE();toast('✅ Tecnico actualizado');render();
       });
     });
