@@ -36,6 +36,21 @@ router.post('/', requireRole('SUPER_ADMIN'), async (req, res) => {
   }
 });
 
+// PATCH /api/usuarios/:id (editar nombre y especialidad)
+router.patch('/:id', requireRole('SUPER_ADMIN'), async (req, res) => {
+  const { nombre, email } = req.body;
+  try {
+    const { rows } = await pool.query(
+      'UPDATE usuarios SET nombre = COALESCE($1, nombre), email = COALESCE($2, email) WHERE id = $3 RETURNING id, nombre, email, rol, activo',
+      [nombre || null, email || null, req.params.id]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Usuario no encontrado' });
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // PATCH /api/usuarios/:id/activo (toggle activo)
 router.patch('/:id/activo', requireRole('SUPER_ADMIN'), async (req, res) => {
   try {
