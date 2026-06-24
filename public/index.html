@@ -206,8 +206,9 @@ function toast(msg){
 var CU=null;
 var CV='dashboard';
 var SB=true;
-var filtros={mes:'2026-06',eq:'',plan:'',estado:''};
+var filtros={mes:mesInicio,eq:'',plan:'',estado:''};
 var calMes=5; var calAnio=2026; var calDia=null;
+var mesInicio='2026-06'; // mes por defecto del sistema
 var repMes='2026-06'; var repEqId='';
 var notifVisto=false; var alertaMostrada=false;
 var verCompletadas=false;
@@ -760,7 +761,7 @@ function bindAll(){
   });
   var bl=document.getElementById('btn-limpiar');
   if(bl)bl.addEventListener('click',function(){
-    filtros={mes:'2026-06',eq:'',plan:'',estado:''};
+    filtros={mes:mesInicio,eq:'',plan:'',estado:''};
     filtros._loaded=false;
     CRONO_DATA=[];
     verCompletadas=false;
@@ -1075,6 +1076,21 @@ function bindAll(){
     err.style.display='none';
     ok.style.display='block';ok.textContent='✅ Contraseña actualizada';
     toast('✅ Contraseña actualizada');
+  });
+  var btnCfgMes=document.getElementById('btn-cfg-mes');
+  if(btnCfgMes)btnCfgMes.addEventListener('click',function(){
+    var m=document.getElementById('cfg-mes').value;
+    if(!m){toast('⚠️ Selecciona un mes');return;}
+    mesInicio=m;
+    // Actualizar filtros y calendario
+    filtros.mes=m;
+    var partes=m.split('-');
+    calAnio=parseInt(partes[0]);
+    calMes=parseInt(partes[1])-1;
+    CRONO_DATA=[];filtros._loaded=false;
+    var ok=document.getElementById('cfg-mes-ok');
+    ok.style.display='block';ok.textContent='✅ Mes de inicio actualizado a: '+m;
+    toast('✅ Mes de inicio: '+m);
   });
   var btnCfgLock=document.getElementById('btn-cfg-lock');
   if(btnCfgLock)btnCfgLock.addEventListener('click',function(){configDesbloqueado=false;render();});
@@ -1460,6 +1476,14 @@ function rConfig(){
   '<button id="btn-cfg-pass" style="width:100%;padding:10px;background:#0c1445;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Guardar contraseña</button>'+
   '</div>'+
 
+  '<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.06)">'+
+  '<div style="font-weight:700;color:#0c1445;margin-bottom:16px;font-size:15px">📅 Mes de inicio del sistema</div>'+
+  '<div style="font-size:13px;color:#6b7280;margin-bottom:12px">Define el mes por defecto al abrir el Cronograma y Calendario.</div>'+
+  '<div style="margin-bottom:12px"><label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px">MES DE INICIO</label>'+
+  '<input id="cfg-mes" type="month" value="'+mesInicio+'" style="width:100%;padding:10px 14px;border:1px solid #d1d5db;border-radius:8px;font-size:14px"/></div>'+
+  '<div id="cfg-mes-ok" style="display:none;color:#15803d;font-size:12px;margin-bottom:8px"></div>'+
+  '<button id="btn-cfg-mes" style="width:100%;padding:10px;background:#0c1445;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Guardar mes de inicio</button>'+
+  '</div>'+
   '<button id="btn-cfg-lock" style="width:100%;padding:10px;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;cursor:pointer">🔒 Bloquear configuracion</button>'+
   '</div>';
 }
