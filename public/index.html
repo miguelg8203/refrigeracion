@@ -708,7 +708,7 @@ function openModal(pid){
     }
   }
   ov.querySelector('#mc').addEventListener('click',close);
-  ov.addEventListener('click',function(e){if(e.target===ov)close();});
+  // click fuera desactivado - solo cierra con X o botones
   var mc=ov.querySelector('#m-comp');if(mc)mc.addEventListener('click',function(){
     var tid=document.getElementById('m-tec').value;
     var obs=(document.getElementById('m-obs').value||'').trim();
