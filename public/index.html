@@ -32,7 +32,30 @@ async function apiFetch(path, opts){
     headers: headers,
     body: opts.body ? JSON.stringify(opts.body) : undefined
   });
-  if(res.status === 401){ AUTH_TOKEN=null; localStorage.removeItem('auth_token'); CU=null; render(); return null; }
+  if(res.status === 401){
+    AUTH_TOKEN=null; localStorage.removeItem('auth_token');
+    // Intentar auto-login con credenciales guardadas
+    var savedU=localStorage.getItem('auth_user');
+    var savedP=localStorage.getItem('auth_pass');
+    if(savedU&&savedP){
+      try{
+        var emailMap={'Admin':'Admin','Refrigeracion':'miguelg8203@gmail.com','fabian':'fabian@refrigeracion.co'};
+        var su=atob(savedU); var sp=atob(savedP);
+        var email=emailMap[su]||su;
+        var reLogin=await fetch(API_URL+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:sp})});
+        if(reLogin.ok){
+          var reData=await reLogin.json();
+          AUTH_TOKEN=reData.token;
+          localStorage.setItem('auth_token',reData.token);
+          CU={nombre:reData.user.nombre,user:su,rol:reData.user.rol,id:reData.user.id};
+          // Reintentar la petición original
+          var retry=await fetch(API_URL+path,{...opts,headers:{...opts.headers,'Authorization':'Bearer '+AUTH_TOKEN}});
+          if(retry.ok) return retry.json();
+        }
+      }catch(e2){console.log('Auto-login fallido');}
+    }
+    CU=null; render(); return null;
+  }
   if(!res.ok){ var e=await res.json().catch(function(){return{error:'Error'}}); throw new Error(e.error||'Error '+res.status); }
   return res.json();
 }
@@ -733,7 +756,7 @@ function bindAll(){
   // logout
   var lo=document.getElementById('btn-logout');
   if(lo)lo.addEventListener('click',function(){
-    CU=null;AUTH_TOKEN=null;localStorage.removeItem('auth_token');
+    CU=null;AUTH_TOKEN=null;localStorage.removeItem('auth_token');localStorage.removeItem('auth_user');localStorage.removeItem('auth_pass');
     DASH_DATA=null;CRONO_DATA=[];filtros._loaded=false;
     render();
   });
